@@ -27,13 +27,72 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
 
-    // TODO:: Fill in the function to do voxel grid point reduction and region based filtering
+    // Create the filtering object: downsample the dataset using a leaf size of 0.2m
+
+    // ----------------------------------------------------
+    // --------------------Filtering-----------------------
+    // -------- Create the Voxel (3D pixel) Grid ----------
+    // ----------------- Point reduction ------------------
+    // ----------------------------------------------------
+
+    pcl::VoxelGrid<PointT> vg;
+    typename pcl::PointCloud<PointT>::Ptr cloudFiltered (new pcl::PointCloud<PointT>);
+    //std::cout << typeid(vg).name() << endl;
+    vg.setInputCloud(cloud);
+    vg.setLeafSize(filterRes, filterRes, filterRes);
+    vg.filter(*cloudFiltered);
+
+    // ----------------------------------------------------
+    // --------------------Filtering-----------------------
+    // -------------------- Crop Box ----------------------
+    // ----------------------------------------------------
+
+    // Create new PointCloud ---> cloudRegion
+    typename pcl::PointCloud<PointT>::Ptr cloudRegion (new pcl::PointCloud<PointT>);
+
+    // Region = true to work with points inside the Crop Box
+    pcl::CropBox<PointT> region(true);
+
+    // Setting the arguments as the parameters of the function declaration
+    region.setMin(minPoint);
+    region.setMax(maxPoint);
+
+    // Set the input data as the result of the voxel grid method
+    region.setInputCloud(cloudFiltered);
+    // save the result inside cloudRegion
+    region.filter(*cloudRegion);
+
+    // ----------------------------------------------------
+    // --------------------Filtering-----------------------
+    // ------ Removing points from the roof of the car ----
+    // ----------------------------------------------------
+
+    //Create a vector of ints    
+    std::vector<int> indices;
+
+    // Remove the roof point from the ego car
+    // To know the exact dimension to remove roof points, plot a box that contains all the points
+    pcl::CropBox<PointT> roof(true);
+    roof.setMin(Eigen::Vector4f (-1.5, -1.7, -1, 1));
+    roof.setMax(Eigen::Vector4f (2.6, 1.7, -0.4, 1));
+    roof.setInputCloud(cloudRegion);
+    roof.filter(indices);
+
+    pcl::PointIndices::Ptr inliers {new pcl::PointIndices};
+    for(int point : indices)
+        inliers->indices.push_back(point);
+    pcl::ExtractIndices<PointT> extract;
+    extract.setInputCloud(cloudRegion);
+    extract.setIndices(inliers);
+    extract.setNegative(true);
+    extract.filter (*cloudRegion);
+    
 
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "filtering took " << elapsedTime.count() << " milliseconds" << std::endl;
 
-    return cloud;
+    return cloudRegion;
 
 }
 

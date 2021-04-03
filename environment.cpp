@@ -48,13 +48,13 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
     Lidar* lidar = new Lidar (cars,0);
     pcl::PointCloud<pcl::PointXYZ>::Ptr inputCloud = lidar->scan();
     //renderRays(viewer,lidar->position,inputCloud);
-    //renderPointCloud(viewer, inputCloud,"inputCloud");
+    renderPointCloud(viewer, inputCloud,"inputCloud");
 
     // TODO:: Create point processor
 
     // 1 will be rendered, 0 will not
-    int render_obst = 0;
-    int render_plane = 0;
+    int render_obst = 1;
+    int render_plane = 1;
     int render_clusters = 1;
     int render_box = 1;
 
@@ -92,6 +92,48 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 
 }
 
+void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
+{
+    // ----------------------------------------------------
+    // -----Open 3D viewer and display City Block ---------
+    // ----------------------------------------------------
+
+    // 1 will be rendered, 0 will not
+    int render_obst = 1;
+    int render_plane = 1;
+    int filteredCloud = 0;
+
+    // Create pointProcessor
+    ProcessPointClouds<pcl::PointXYZI> pointProcessor;
+    // Create pointProcessorI
+    ProcessPointClouds<pcl::PointXYZI> pointProcessorI;
+
+    // Load data into inputCloud
+    pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessor.loadPcd("/home/workspace/SFND_Lidar_Obstacle_Detection/src/sensors/data/pcd/data_1/0000000000.pcd");
+    // Render cloud
+    //renderPointCloud(viewer,inputCloud,"cloud");
+
+    // Create filterCloud to receive the filtered cloud
+    pcl::PointCloud<pcl::PointXYZI>::Ptr filterCloud = pointProcessorI.FilterCloud(inputCloud, 0.2, Eigen::Vector4f (-20, -5, -2.5, 1), Eigen::Vector4f (20, 7, 5, 1));
+    
+    // Segmentation process
+    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloudI = pointProcessorI.SegmentPlane (filterCloud, 100, 0.25);
+    
+    // Clustering process
+    //std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClustersI = pointProcessor.Clustering(segmentCloud.first, 1.0, 2, 30);
+
+    // Rendering
+    // Render segmentated cloud
+    if(render_obst)
+        renderPointCloud(viewer,segmentCloudI.first,"obstCloud",Color(1,0,0));
+    if(render_plane)
+        renderPointCloud(viewer,segmentCloudI.second,"planeCloud",Color(0,1,0));
+    // Render filtered cloud
+    if (filteredCloud)
+        renderPointCloud(viewer,filterCloud,"filterCloud");
+
+}
+
 //setAngle: SWITCH CAMERA ANGLE {XY, TopDown, Side, FPS}
 void initCamera(CameraAngle setAngle, pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
@@ -122,7 +164,8 @@ int main (int argc, char** argv)
     pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
     CameraAngle setAngle = XY;
     initCamera(setAngle, viewer);
-    simpleHighway(viewer);
+    //simpleHighway(viewer);
+    cityBlock(viewer);
 
     while (!viewer->wasStopped ())
     {
