@@ -52,8 +52,9 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 
     // TODO:: Create point processor
 
-    int render_obst = 1;
-    int render_plane = 1;
+    // 1 will be rendered, 0 will not
+    int render_obst = 0;
+    int render_plane = 0;
     int render_clusters = 1;
     int render_box = 1;
 

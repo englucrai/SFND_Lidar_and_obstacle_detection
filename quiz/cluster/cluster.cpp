@@ -70,16 +70,18 @@ void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Bo
 		render2DTree(node->left,viewer, lowerWindow, iteration, depth+1);
 		render2DTree(node->right,viewer, upperWindow, iteration, depth+1);
 
-
 	}
 
 }
 
-void clusterHelper(int indice, const std::vector<std::vector<float>> points, std::vector<int>& cluster, std::vector<bool> processed, KdTree* tree, float distanceTol)
+void clusterHelper(int indice, const std::vector<std::vector<float>> points, std::vector<int>& cluster, std::vector<bool>& processed, KdTree* tree, float distanceTol)
 {
+	// mark the point as processed
 	processed[indice] = true;
+
 	cluster.push_back(indice);
 
+	// check wich points are nearby to this indice
 	std::vector<int> nearest = tree->search(points[indice], distanceTol);
 
 	for(int id : nearest)
@@ -89,15 +91,18 @@ void clusterHelper(int indice, const std::vector<std::vector<float>> points, std
 	}
 }
 
-std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
+std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>> points, KdTree* tree, float distanceTol)
 {
 
 	// TODO: Fill out this function to return list of indices for each cluster
 
+	// Vector of vector inst ---> clusters
 	std::vector<std::vector<int>> clusters;
 
+	// verify wich points have been processed
 	std::vector<bool> processed (points.size(), false);
 
+	// Iterate throught the points
 	int i = 0;
 	while(i < points.size())
 	{
@@ -107,8 +112,12 @@ std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<flo
 			continue;
 		}
 
+		// create a new cluster if the point has not been processed
 		std::vector<int> cluster;
+
+		// calling the "proximity" function
 		clusterHelper (i, points, cluster, processed, tree, distanceTol);
+
 		clusters.push_back(cluster);
 		i++;
 	}
@@ -139,12 +148,11 @@ int main ()
   
     for (int i=0; i<points.size(); i++) 
     	tree->insert(points[i],i); 
-
   	int it = 0;
   	render2DTree(tree->root,viewer,window, it);
   
   	std::cout << "Test Search" << std::endl;
-  	std::vector<int> nearby = tree->search({-6,7},3.0);
+  	std::vector<int> nearby = tree->search({-6.0,6.5},3.0);
   	for(int index : nearby)
       std::cout << index << ",";
   	std::cout << std::endl;
