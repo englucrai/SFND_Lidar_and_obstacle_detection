@@ -1,5 +1,6 @@
-/* \author Aaron Brown */
+/* \author Lucas Raimundo */
 // Create simple 3d highway enviroment using PCL
+// And loading PCL data
 // for exploring self-driving car sensors
 
 #include "sensors/lidar.h"
@@ -92,7 +93,7 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 
 }
 
-void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointClouds<pcl::PointXYZI> pointProcessor, pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud)
+void builtIncityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointClouds<pcl::PointXYZI> pointProcessor, pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud)
 //void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
     // ----------------------------------------------------
@@ -122,9 +123,6 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
     // Segmentation process
     std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloudI = pointProcessor.SegmentPlane (filterCloud, 100, 0.25);
 
-    // Segmentation process using Ransac 3D
-    //std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloudI = pointProcessor.Ransac3D(filterCloud, 100, 0.25);
-    
     // Clustering process
     std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClustersI = pointProcessor.Clustering(segmentCloudI.first, 1.0, 10, 600);
 
@@ -162,6 +160,92 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
 
 }
 
+//void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointClouds<pcl::PointXYZI> pointProcessor, pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud)
+void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
+{
+    // ----------------------------------------------------
+    // -----Open 3D viewer and display City Block ---------
+    // ----------------------------------------------------
+
+    // 1 will be rendered, 0 will not
+    int render_obst = 1;
+    int render_plane = 1;
+    int filteredCloud = 0;
+    int render_clusters = 0;
+    int render_box = 1;
+
+    // Create pointProcessor
+    ProcessPointClouds<pcl::PointXYZI> pointProcessor;
+    // Create pointProcessorI
+    //ProcessPointClouds<pcl::PointXYZI> pointProcessorI;
+
+    // Load data into inputCloud
+    pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessor.loadPcd("/home/workspace/SFND_Lidar_Obstacle_Detection/src/sensors/data/pcd/data_1/0000000000.pcd");
+    // Render cloud
+    //renderPointCloud(viewer,inputCloud,"cloud");
+
+    // Create filterCloud to receive the filtered cloud
+    pcl::PointCloud<pcl::PointXYZI>::Ptr filterCloud = pointProcessor.FilterCloud(inputCloud, 0.2, Eigen::Vector4f (-20, -5, -2.5, 1), Eigen::Vector4f (20, 7, 5, 1));
+    // Render cloud
+    //renderPointCloud(viewer,filterCloud,"cloud");
+    
+    /*
+    // Segmentation process
+    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloudI = pointProcessor.SegmentPlane (filterCloud, 100, 0.25);
+    // Render cloud
+    renderPointCloud(viewer,segmentCloudI.first,"obstCloud",Color(1,0,0));
+    renderPointCloud(viewer,segmentCloudI.second,"planeCloud",Color(0,1,0));
+    */
+    
+    // Segmentation process using Ransac 3D
+    //std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloudI = Ransac3D(filterCloud, 100, 0.25);
+    
+    /*
+    // Clustering process
+    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClustersI = pointProcessor.Clustering(segmentCloudI.first, 1.0, 10, 600);
+
+    //KdTree* tree = new Kdtree;
+
+    //for (int i=0; i<segmentCloudI.size(); i++)
+    //    tree->insert(segmentCloudI[i],i);
+
+    // Euclidean clustering
+    //std::vector<std::vector<int>> cloudClustersI = euclideanClustering(segmentCloudI.first, tree, 3.0);
+
+    int clusterId = 0;
+    std::vector<Color> colors = {Color(1,0,0), Color (1,1,0), Color(0,0,1)};
+
+    // Rendering
+    // Render segmentated cloud
+    if(render_obst)
+        renderPointCloud(viewer,segmentCloudI.first,"obstCloud",Color(1,0,0));
+    if(render_plane)
+        renderPointCloud(viewer,segmentCloudI.second,"planeCloud",Color(0,1,0));
+    // Render filtered cloud
+    if (filteredCloud)
+        renderPointCloud(viewer,filterCloud,"filterCloud");
+
+    for(pcl::PointCloud<pcl::PointXYZI>::Ptr cluster : cloudClustersI)
+    {
+        if(render_clusters)
+        {
+            std::cout << "cluster size ";
+            pointProcessor.numPoints(cluster);
+            renderPointCloud(viewer,cluster,"obstCloud"+std::to_string(clusterId),colors[clusterId]);
+        }
+        
+        if (render_box)
+        {
+            Box box = pointProcessor.BoundingBox(cluster);
+            renderBox(viewer,box,clusterId);
+        }
+
+       
+        ++clusterId;
+    }
+    */
+}
+
 //setAngle: SWITCH CAMERA ANGLE {XY, TopDown, Side, FPS}
 void initCamera(CameraAngle setAngle, pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
@@ -193,21 +277,23 @@ int main (int argc, char** argv)
     CameraAngle setAngle = XY;
     initCamera(setAngle, viewer);
     //simpleHighway(viewer);
-    //cityBlock(viewer);
+    cityBlock(viewer);
 
+    /*
     ProcessPointClouds<pcl::PointXYZI> pointProcessorI;
 
     std::vector<boost::filesystem::path> stream = pointProcessorI.streamPcd("/home/workspace/SFND_Lidar_Obstacle_Detection/src/sensors/data/pcd/data_1");
     auto streamIterator = stream.begin();
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloudI;
-
+    
     while (!viewer->wasStopped ())
     {
         viewer->removeAllPointClouds();
         viewer->removeAllShapes();
 
         inputCloudI = pointProcessorI.loadPcd((*streamIterator).string());
+        //builtIncityBlock(viewer, pointProcessorI, inputCloudI);
         cityBlock(viewer, pointProcessorI, inputCloudI);
 
         streamIterator++;
@@ -216,4 +302,10 @@ int main (int argc, char** argv)
 
         viewer->spinOnce ();
     } 
+    */
+    while (!viewer->wasStopped ())
+    {
+        viewer->spinOnce ();
+    } 
+    
 }
