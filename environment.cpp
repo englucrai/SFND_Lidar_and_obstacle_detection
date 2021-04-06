@@ -4,6 +4,7 @@
 // for exploring self-driving car sensors
 
 #include "sensors/lidar.h"
+#include<unordered_set>
 #include "render/render.h"
 #include "processPointClouds.h"
 // using templates for processPointClouds so also include .cpp to help linker
@@ -187,7 +188,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     // Create filterCloud to receive the filtered cloud
     pcl::PointCloud<pcl::PointXYZI>::Ptr filterCloud = pointProcessor.FilterCloud(inputCloud, 0.2, Eigen::Vector4f (-20, -5, -2.5, 1), Eigen::Vector4f (20, 7, 5, 1));
     // Render cloud
-    //renderPointCloud(viewer,filterCloud,"cloud");
+    renderPointCloud(viewer,filterCloud,"cloud");
     
     /*
     // Segmentation process
@@ -197,6 +198,8 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     renderPointCloud(viewer,segmentCloudI.second,"planeCloud",Color(0,1,0));
     */
     
+    std::unordered_set<int> inliers = Ransac3D(filterCloud);
+
     // Segmentation process using Ransac 3D
     //std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloudI = Ransac3D(filterCloud, 100, 0.25);
     
