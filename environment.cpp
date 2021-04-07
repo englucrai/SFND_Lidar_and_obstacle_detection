@@ -173,6 +173,8 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     int filteredCloud = 0;
     int render_clusters = 0;
     int render_box = 1;
+    int render_ransac1 = 1;
+    int render_ransac2 = 1;
 
     // Create pointProcessor
     ProcessPointClouds<pcl::PointXYZI> pointProcessor;
@@ -187,7 +189,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     // Create filterCloud to receive the filtered cloud
     pcl::PointCloud<pcl::PointXYZI>::Ptr filterCloud = pointProcessor.FilterCloud(inputCloud, 0.2, Eigen::Vector4f (-20, -5, -2.5, 1), Eigen::Vector4f (20, 7, 5, 1));
     // Render cloud
-    renderPointCloud(viewer,filterCloud,"cloud");
+    //renderPointCloud(viewer,filterCloud,"cloud");
     
     /*
     // Segmentation process
@@ -200,8 +202,13 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     //std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr,pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = Ransac3D(filterCloud,100,0.5);
 
     // Segmentation process using Ransac 3D
-    //std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloudI = Ransac3D(filterCloud, 100, 0.25);
-    
+    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloudI = pointProcessor.Ransac3D(filterCloud, 100, 0.25);
+
+    if(render_ransac1)
+        renderPointCloud(viewer,segmentCloudI.first,"obstCloud",Color(1,0,0));
+    if(render_ransac2)
+        renderPointCloud(viewer,segmentCloudI.second,"planeCloud",Color(0,1,0));
+
     /*
     // Clustering process
     std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClustersI = pointProcessor.Clustering(segmentCloudI.first, 1.0, 10, 600);

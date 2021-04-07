@@ -93,16 +93,12 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
 
 }
 
-/*
 template<typename PointT>
 std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::Ransac3D(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceTol)
 {
     
 	std::unordered_set<int> inliersResult;
 	srand(time(NULL));
-	
-    int maxIterations = 100;
-    float distanceTol = 0.25;
 
 	while(maxIterations--)
 	{
@@ -137,7 +133,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 		{
 			if(inliers.count(index) > 0)
 				continue;
-			pcl::PointXYZ point = cloud->points[index];
+			pcl::PointXYZI point = cloud->points[index];
 			float x4 = point.x;
 			float y4 = point.y;
 			float z4 = point.z;
@@ -149,29 +145,27 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 
 		}
 
-
 		if(inliers.size()>inliersResult.size())
 		{
 			inliersResult = inliers;
 		}
 	}
 
-    typename PointCloud<PointT>::Ptr cloudInliers (new PointCloud<PointT>());
-    typename PointCloud<PointT>::Ptr cloudOutliers (new PointCloud<PointT>());
+    typename pcl::PointCloud<PointT>::Ptr cloudInliers (new pcl::PointCloud<PointT>());
+    typename pcl::PointCloud<PointT>::Ptr cloudOutliers (new pcl::PointCloud<PointT>());
 
     for (int index = 0; index < cloud->points.size(); index++)
     {
         PointT point = cloud->points[index];
-        if(inliers.count(index))
+        if(inliersResult.count(index))
             cloudInliers->points.push_back(point);
         else
             cloudOutliers->points.push_back(point);
     }
 
-    std::pair<typename PointCloud<PointT>::Ptr, typename PointCloud<PointT>::Ptr> partedClouds(CloudOutliers, cloudInliers);
-    return partedClouds;
+    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> partedClouds(cloudOutliers, cloudInliers);
+    
 }
-*/
 
 template<typename PointT>
 std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud) 
@@ -272,7 +266,6 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
 
     return clusters;
 }
-
 
 template<typename PointT>
 Box ProcessPointClouds<PointT>::BoundingBox(typename pcl::PointCloud<PointT>::Ptr cluster)
