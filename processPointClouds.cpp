@@ -1,17 +1,15 @@
 // PCL lib Functions for processing point clouds 
-
 #include "processPointClouds.h"
 
+#include "unordered_set"
 
 //constructor:
 template<typename PointT>
 ProcessPointClouds<PointT>::ProcessPointClouds() {}
 
-
 //de-constructor:
 template<typename PointT>
 ProcessPointClouds<PointT>::~ProcessPointClouds() {}
-
 
 template<typename PointT>
 void ProcessPointClouds<PointT>::numPoints(typename pcl::PointCloud<PointT>::Ptr cloud)
@@ -95,10 +93,11 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
 
 }
 
+/*
 template<typename PointT>
-typename std::unordered_set<int> ProcessPointClouds<PointT>::Ransac3D(typename pcl::PointCloud<PointT>::Ptr cloud)
+std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::Ransac3D(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceTol)
 {
-    auto startTime = std::chrono::steady_clock::now();
+    
 	std::unordered_set<int> inliersResult;
 	srand(time(NULL));
 	
@@ -157,35 +156,22 @@ typename std::unordered_set<int> ProcessPointClouds<PointT>::Ransac3D(typename p
 		}
 	}
 
-	auto endTime = std::chrono::steady_clock::now();
-	auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-	std::cout << "RANSAC TOOK " << elapsedTime.count() << "milliseconds" << std::endl;
-
-	return inliersResult;
-
-}
-
-template<typename PointT>
-std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> PartClouds(std::unordered_set<int> inliers, typename pcl::PointCloud<PointT>::Ptr cloud)
-{
-    auto startTime = std::chrono::steady_clock::now();
-
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloudInliers (new pcl::PointCloud<pcl::PointXYZI>());
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloudOutliers (new pcl::PointCloud<pcl::PointXYZI>());
+    typename PointCloud<PointT>::Ptr cloudInliers (new PointCloud<PointT>());
+    typename PointCloud<PointT>::Ptr cloudOutliers (new PointCloud<PointT>());
 
     for (int index = 0; index < cloud->points.size(); index++)
     {
-        pcl::PointXYZI point = cloud->points[index];
+        PointT point = cloud->points[index];
         if(inliers.count(index))
             cloudInliers->points.push_back(point);
         else
             cloudOutliers->points.push_back(point);
     }
 
-    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult = PartedClouds(inliers, cloud);
-
-    return segResult;
+    std::pair<typename PointCloud<PointT>::Ptr, typename PointCloud<PointT>::Ptr> partedClouds(CloudOutliers, cloudInliers);
+    return partedClouds;
 }
+*/
 
 template<typename PointT>
 std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud) 
@@ -207,7 +193,6 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 
     return segResult;
 }
-
 
 template<typename PointT>
 std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold)
@@ -308,14 +293,12 @@ Box ProcessPointClouds<PointT>::BoundingBox(typename pcl::PointCloud<PointT>::Pt
     return box;
 }
 
-
 template<typename PointT>
 void ProcessPointClouds<PointT>::savePcd(typename pcl::PointCloud<PointT>::Ptr cloud, std::string file)
 {
     pcl::io::savePCDFileASCII (file, *cloud);
     std::cerr << "Saved " << cloud->points.size () << " data points to "+file << std::endl;
 }
-
 
 template<typename PointT>
 typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::loadPcd(std::string file)
@@ -331,7 +314,6 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::loadPcd(std::s
 
     return cloud;
 }
-
 
 template<typename PointT>
 std::vector<boost::filesystem::path> ProcessPointClouds<PointT>::streamPcd(std::string dataPath)
