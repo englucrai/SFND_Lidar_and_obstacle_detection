@@ -286,9 +286,9 @@ int main (int argc, char** argv)
     CameraAngle setAngle = XY;
     initCamera(setAngle, viewer);
     //simpleHighway(viewer);
-    cityBlock(viewer);
+    //cityBlock(viewer);
 
-    /*
+    
     ProcessPointClouds<pcl::PointXYZI> pointProcessorI;
 
     std::vector<boost::filesystem::path> stream = pointProcessorI.streamPcd("/home/workspace/SFND_Lidar_Obstacle_Detection/src/sensors/data/pcd/data_1");
@@ -302,8 +302,8 @@ int main (int argc, char** argv)
         viewer->removeAllShapes();
 
         inputCloudI = pointProcessorI.loadPcd((*streamIterator).string());
-        //builtIncityBlock(viewer, pointProcessorI, inputCloudI);
-        cityBlock(viewer, pointProcessorI, inputCloudI);
+        builtIncityBlock(viewer, pointProcessorI, inputCloudI);
+        //cityBlock(viewer, pointProcessorI, inputCloudI);
 
         streamIterator++;
         if(streamIterator == stream.end())
@@ -311,7 +311,7 @@ int main (int argc, char** argv)
 
         viewer->spinOnce ();
     } 
-    */
+    
     while (!viewer->wasStopped ())
     {
         viewer->spinOnce ();
