@@ -160,8 +160,8 @@ void builtIncityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPoi
 
 }
 
-//void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointClouds<pcl::PointXYZI> pointProcessor, pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud)
-void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
+void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointClouds<pcl::PointXYZI> pointProcessor, pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud)
+//void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
     // ----------------------------------------------------
     // -----Open 3D viewer and display City Block ---------
@@ -177,12 +177,12 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
     int render_ransac2 = 1;
 
     // Create pointProcessor
-    ProcessPointClouds<pcl::PointXYZI> pointProcessor;
+    //ProcessPointClouds<pcl::PointXYZI> pointProcessor;
     // Create pointProcessorI
     //ProcessPointClouds<pcl::PointXYZI> pointProcessorI;
 
     // Load data into inputCloud
-    pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessor.loadPcd("/home/workspace/SFND_Lidar_Obstacle_Detection/src/sensors/data/pcd/data_1/0000000000.pcd");
+    //pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessor.loadPcd("/home/workspace/SFND_Lidar_Obstacle_Detection/src/sensors/data/pcd/data_1/0000000000.pcd");
     // Render cloud
     //renderPointCloud(viewer,inputCloud,"cloud");
 
@@ -286,9 +286,9 @@ int main (int argc, char** argv)
     CameraAngle setAngle = XY;
     initCamera(setAngle, viewer);
     //simpleHighway(viewer);
-    cityBlock(viewer);
+    //cityBlock(viewer);
 
-    /*
+    
     ProcessPointClouds<pcl::PointXYZI> pointProcessorI;
 
     std::vector<boost::filesystem::path> stream = pointProcessorI.streamPcd("/home/workspace/SFND_Lidar_Obstacle_Detection/src/sensors/data/pcd/data_1");
@@ -302,8 +302,8 @@ int main (int argc, char** argv)
         viewer->removeAllShapes();
 
         inputCloudI = pointProcessorI.loadPcd((*streamIterator).string());
-        builtIncityBlock(viewer, pointProcessorI, inputCloudI);
-        //cityBlock(viewer, pointProcessorI, inputCloudI);
+        //builtIncityBlock(viewer, pointProcessorI, inputCloudI);
+        cityBlock(viewer, pointProcessorI, inputCloudI);
 
         streamIterator++;
         if(streamIterator == stream.end())
@@ -311,10 +311,12 @@ int main (int argc, char** argv)
 
         viewer->spinOnce ();
     } 
-    */
+    
+
+    /*
     while (!viewer->wasStopped ())
     {
         viewer->spinOnce ();
     } 
-  
+    */
 }
