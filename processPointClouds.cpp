@@ -164,6 +164,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     }
 
     std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> partedClouds(cloudOutliers, cloudInliers);
+    return partedClouds;
     
 }
 
